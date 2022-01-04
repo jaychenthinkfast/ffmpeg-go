@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/jaychenthinkfast/ffmpeg-go/pkg/video2image"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
@@ -18,8 +19,16 @@ type Config struct {
 	}
 }
 
+var configPath string
+
+func init() {
+	flag.StringVar(&configPath, "c", "demo/demo.yaml", "config path")
+}
+
 func main() {
-	config, err := ioutil.ReadFile("demo/demo.yaml")
+	flag.Parse()
+	klog.Info(configPath)
+	config, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		klog.Error(err)
 	}
