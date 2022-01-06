@@ -28,6 +28,6 @@ func main() {
 		}
 	}
 	for _, filePath := range c.Path.Files {
-		video2image.Run(filePath, c.Type)
+		video2image.New(filePath, c.Type).Run()
 	}
 }

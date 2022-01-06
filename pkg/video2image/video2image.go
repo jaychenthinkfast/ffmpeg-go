@@ -7,13 +7,25 @@ import (
 	"strings"
 )
 
-func Run(videoPath string, typ string) {
-	path := strings.TrimSuffix(videoPath, "."+typ)
+type Item struct {
+	FilePath string
+	Type     string
+}
+
+func New(path, typ string) *Item {
+	return &Item{
+		FilePath: path,
+		Type:     typ,
+	}
+}
+
+func (item *Item) Run() {
+	path := strings.TrimSuffix(item.FilePath, "."+item.Type)
 	err := os.Mkdir(path, 0777)
 	if err != nil {
 		klog.Error(err)
 	}
-	cmd := exec.Command("ffmpeg", "-i", videoPath, "-r", "1", path+"/%06d.jpg")
+	cmd := exec.Command("ffmpeg", "-i", item.FilePath, "-r", "1", path+"/%06d.jpg")
 	klog.Info(cmd.String())
 	//cmd.Stdout = os.Stdout
 	//cmd.Stderr = os.Stderr
