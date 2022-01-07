@@ -27,7 +27,9 @@ func main() {
 			c.Path.Files = append(c.Path.Files, dir+"/"+file.Name())
 		}
 	}
+	video2image.Init(c.Type, c.ConcurrentNum)
 	for _, filePath := range c.Path.Files {
-		video2image.New(filePath, c.Type).Run()
+		video2image.Add(filePath)
 	}
+	video2image.End()
 }

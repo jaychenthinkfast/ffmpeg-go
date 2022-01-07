@@ -1,26 +1,69 @@
 package video2image
 
 import (
+	"github.com/jaychenthinkfast/ffmpeg-go/pkg/util/workqueue"
 	"k8s.io/klog/v2"
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 )
 
 type Item struct {
 	FilePath string
-	Type     string
 }
 
-func New(path, typ string) *Item {
-	return &Item{
+var typ string
+var concurrentNum int
+var q *workqueue.Type
+var consumerWG sync.WaitGroup
+
+func Init(t string, num int) {
+	typ = t
+	concurrentNum = num
+	if concurrentNum > 0 {
+		q = workqueue.NewQueue()
+		consumerWG = sync.WaitGroup{}
+		consumerWG.Add(concurrentNum)
+		for i := 0; i < concurrentNum; i++ {
+			go func(i int) {
+				defer consumerWG.Done()
+				for {
+					item, quit := q.Get()
+					if quit {
+						return
+					}
+					v := item.(*Item)
+					klog.Infof("Worker %v: begin processing %v", i, v.FilePath)
+					v.Run()
+					klog.Infof("Worker %v: done processing %v", i, v.FilePath)
+					q.Done(item)
+				}
+			}(i)
+		}
+	}
+}
+
+func Add(path string) {
+	v := &Item{
 		FilePath: path,
-		Type:     typ,
+	}
+	if concurrentNum == 0 {
+		v.Run()
+	} else {
+		q.Add(v)
+	}
+}
+
+func End() {
+	if concurrentNum > 0 {
+		q.ShutDownWithDrain()
+		consumerWG.Wait()
 	}
 }
 
 func (item *Item) Run() {
-	path := strings.TrimSuffix(item.FilePath, "."+item.Type)
+	path := strings.TrimSuffix(item.FilePath, "."+typ)
 	err := os.Mkdir(path, 0777)
 	if err != nil {
 		klog.Error(err)

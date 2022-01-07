@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	Type string
-	Path struct {
+	ConcurrentNum int
+	Type          string
+	Path          struct {
 		File  string
 		Dir   string
 		Files []string
