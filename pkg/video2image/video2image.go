@@ -13,13 +13,14 @@ type Item struct {
 	FilePath string
 }
 
-var typ string
+var typ, fr string
 var concurrentNum int
 var q *workqueue.Type
 var consumerWG sync.WaitGroup
 
-func Init(t string, num int) {
+func Init(t string, num int, r string) {
 	typ = t
+	fr = r
 	concurrentNum = num
 	if concurrentNum > 0 {
 		q = workqueue.NewQueue()
@@ -63,17 +64,19 @@ func End() {
 }
 
 func (item *Item) Run() {
-	path := strings.TrimSuffix(item.FilePath, "."+typ)
-	err := os.Mkdir(path, 0777)
-	if err != nil {
-		klog.Error(err)
-	}
-	cmd := exec.Command("ffmpeg", "-i", item.FilePath, "-r", "1", path+"/%06d.jpg")
-	klog.Info(cmd.String())
-	//cmd.Stdout = os.Stdout
-	//cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		klog.Errorf("failed to call cmd.Run(): %v", err)
+	if strings.HasSuffix(item.FilePath, typ) {
+		path := strings.TrimSuffix(item.FilePath, "."+typ)
+		err := os.Mkdir(path, 0777)
+		if err != nil && !strings.Contains(err.Error(), "file exists") {
+			klog.Error(err)
+		}
+		cmd := exec.Command("ffmpeg", "-i", item.FilePath, "-r", fr, path+"/%06d.jpg")
+		klog.Info(cmd.String())
+		//cmd.Stdout = os.Stdout
+		//cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		if err != nil {
+			klog.Errorf("failed to call cmd.Run(): %v", err)
+		}
 	}
 }

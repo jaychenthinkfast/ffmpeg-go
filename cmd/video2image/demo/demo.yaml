@@ -1,4 +1,5 @@
 concurrentnum: 10
 type: mp4
+framerate: 0.02
 path:
   file: demo/demo.mp4

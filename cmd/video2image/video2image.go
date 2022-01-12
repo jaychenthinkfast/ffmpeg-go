@@ -13,7 +13,9 @@ func main() {
 	if err != nil {
 		klog.Error(err)
 	}
-	c.Path.Dirs = append(c.Path.Dirs, c.Path.Dir)
+	if c.Path.Dir != "" {
+		c.Path.Dirs = append(c.Path.Dirs, c.Path.Dir)
+	}
 	c.Path.Files = append(c.Path.Files, c.Path.File)
 	klog.Info(c.Path)
 	for _, dir := range c.Path.Dirs {
@@ -27,7 +29,7 @@ func main() {
 			c.Path.Files = append(c.Path.Files, dir+"/"+file.Name())
 		}
 	}
-	video2image.Init(c.Type, c.ConcurrentNum)
+	video2image.Init(c.Type, c.ConcurrentNum, c.FrameRate)
 	for _, filePath := range c.Path.Files {
 		video2image.Add(filePath)
 	}

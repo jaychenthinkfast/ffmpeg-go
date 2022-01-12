@@ -10,6 +10,7 @@ import (
 type Config struct {
 	ConcurrentNum int
 	Type          string
+	FrameRate     string
 	Path          struct {
 		File  string
 		Dir   string
