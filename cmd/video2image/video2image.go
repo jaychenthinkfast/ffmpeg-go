@@ -8,6 +8,21 @@ import (
 	"strings"
 )
 
+func readDir(dir string) (fileSlice []string) {
+	dir = strings.TrimSuffix(dir, "/") + "/"
+	files, _ := ioutil.ReadDir(dir)
+	for _, file := range files {
+		isDir := file.IsDir()
+		if isDir {
+			_fileSlice := readDir(dir + file.Name() + "/")
+			fileSlice = append(fileSlice, _fileSlice...)
+		} else {
+			fileSlice = append(fileSlice, dir+file.Name())
+		}
+	}
+	return fileSlice
+}
+
 func main() {
 	c, err := config.Parse()
 	if err != nil {
@@ -19,16 +34,9 @@ func main() {
 	c.Path.Files = append(c.Path.Files, c.Path.File)
 	klog.Info(c.Path)
 	for _, dir := range c.Path.Dirs {
-		files, err := ioutil.ReadDir(dir)
-		if err != nil {
-			klog.Error(err)
-		}
-		for _, file := range files {
-			dir = strings.TrimSuffix(dir, "/")
-			klog.Info(dir + "/" + file.Name())
-			c.Path.Files = append(c.Path.Files, dir+"/"+file.Name())
-		}
+		c.Path.Files = append(c.Path.Files, readDir(dir)...)
 	}
+	klog.Info(c.Path.Files)
 	video2image.Init(c.Type, c.ConcurrentNum, c.FrameRate)
 	for _, filePath := range c.Path.Files {
 		video2image.Add(filePath)
