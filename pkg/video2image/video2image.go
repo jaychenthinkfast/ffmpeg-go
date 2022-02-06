@@ -46,13 +46,15 @@ func Init(t string, num int, r string) {
 }
 
 func Add(path string) {
-	v := &Item{
-		FilePath: path,
-	}
-	if concurrentNum == 0 {
-		v.Run()
-	} else {
-		q.Add(v)
+	if strings.HasSuffix(path, typ) && !strings.Contains(path, "._") {
+		v := &Item{
+			FilePath: path,
+		}
+		if concurrentNum == 0 {
+			v.Run()
+		} else {
+			q.Add(v)
+		}
 	}
 }
 
